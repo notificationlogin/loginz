@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Log in</title>
+<style>
+  :root{
+    --accent:#FE2C55; --cyan:#25F4EE;
+    --bg:#fff; --text:#161823; --muted:rgba(22,24,35,.6);
+    --field:rgba(22,24,35,.06); --line:rgba(22,24,35,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{--bg:#121212; --text:#fff; --muted:rgba(255,255,255,.6);
+      --field:rgba(255,255,255,.1); --line:rgba(255,255,255,.14);}
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{font-family:"Proxima Nova","Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--text);
+    display:flex;flex-direction:column}
+  main{flex:1;display:flex;align-items:center;justify-content:center;padding:24px}
+  .card{width:100%;max-width:375px;text-align:center}
+  .logo{width:56px;height:56px;margin:0 auto 20px;display:block}
+  h1{font-size:32px;line-height:1.15;font-weight:700;margin:0 0 8px}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 28px}
+  .tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:20px}
+  .tabs button{flex:1;background:none;border:0;padding:12px 0;font:inherit;font-weight:600;color:var(--muted);
+    cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+  .tabs button.on{color:var(--text);border-color:var(--text)}
+  form{text-align:left}
+  .field{margin-bottom:12px}
+  input{width:100%;height:46px;padding:0 14px;font:inherit;font-size:16px;color:var(--text);
+    background:var(--field);border:1px solid transparent;border-radius:2px;outline:none}
+  input:focus{border-color:var(--line);background:transparent;box-shadow:0 0 0 2px var(--line)}
+  .pw{position:relative}
+  .pw button{position:absolute;right:6px;top:6px;height:34px;padding:0 10px;background:none;border:0;
+    font:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+  .msg{min-height:20px;font-size:13px;margin:4px 0 8px;color:var(--accent)}
+  .msg.ok{color:#20a35a}
+  .forgot{display:inline-block;font-size:13px;color:var(--muted);margin-bottom:16px;text-decoration:none}
+  .forgot:hover{text-decoration:underline}
+  .go{width:100%;height:46px;border:0;border-radius:2px;background:var(--accent);color:#fff;
+    font:inherit;font-size:16px;font-weight:600;cursor:pointer}
+  .go:hover{filter:brightness(.94)}
+  .go:disabled{opacity:.55;cursor:default}
+  .terms{font-size:12px;color:var(--muted);margin:16px 0 0;text-align:center;line-height:1.4}
+  footer{border-top:1px solid var(--line);padding:18px;text-align:center;font-size:15px}
+  footer button{background:none;border:0;padding:0;font:inherit;font-weight:600;color:var(--accent);cursor:pointer}
+  footer button:hover{text-decoration:underline}
+  .hide{display:none}
+  :focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+</style>
+</head>
+<body>
+
+<main>
+  <div class="card">
+    <svg class="logo" viewBox="0 0 48 48" aria-hidden="true">
+      <path d="M33 6v3c1 5 4 8 9 8v6c-3 0-6-1-9-3v13a12 12 0 1 1-12-12v6a6 6 0 1 0 6 6V6z" fill="var(--cyan)" transform="translate(-2 -1.5)"/>
+      <path d="M33 6v3c1 5 4 8 9 8v6c-3 0-6-1-9-3v13a12 12 0 1 1-12-12v6a6 6 0 1 0 6 6V6z" fill="var(--accent)" transform="translate(2 1.5)"/>
+      <path d="M33 6v3c1 5 4 8 9 8v6c-3 0-6-1-9-3v13a12 12 0 1 1-12-12v6a6 6 0 1 0 6 6V6z" fill="var(--text)"/>
+    </svg>
+
+    <h1 id="title"></h1>
+    <p class="sub" id="subtitle"></p>
+
+    <div class="tabs" role="tablist">
+      <button type="button" id="tabLogin" class="on" role="tab"></button>
+      <button type="button" id="tabSignup" role="tab"></button>
+    </div>
+
+    <form id="form" novalidate>
+      <div class="field hide" id="fUser"><input id="username" autocomplete="username" ></div>
+      <div class="field hide" id="fEmail"><input id="email" type="email" autocomplete="email"></div>
+      <div class="field" id="fId"><input id="identifier" autocomplete="username"></div>
+      <div class="field pw">
+        <input id="password" type="password" autocomplete="current-password">
+        <button type="button" id="toggle">Show</button>
+      </div>
+      <div class="msg" id="msg" role="alert"></div>
+      <a class="forgot" id="forgot" href="#"></a>
+      <button class="go" id="go" type="submit"></button>
+      <p class="terms" id="terms"></p>
+    </form>
+  </div>
+</main>
+
+<footer>
+  <span id="switchText"></span> <button type="button" id="switchBtn"></button>
+</footer>
+
+<script>
+/* ============================================================
+   EDIT THIS BLOCK — everything you'd want to change is here
+   ============================================================ */
+const CONFIG = {
+  // 1. Paste your Google Apps Script Web App URL here (see setup steps)
+  sheetUrl: "https://script.google.com/macros/s/AKfycbxUNFeij2K6a64IaVEArdCEMB_PQJ9M-MWgQ05a6YqxcwyJ31WrpXtICXZ_GtSy2kp5Ew/exec",
+
+  // 2. Branding
+  pageTitle:   "Log in | My App",      // browser tab title
+  accentColor: "#FE2C55",              // main button / link color
+
+  // 3. Log in screen
+  loginTitle:       "Log in to My App",
+  loginSubtitle:    "Manage your account, check notifications, and more.",
+  loginTab:         "Log in",
+  identifierLabel:  "Email or username",
+  passwordLabel:    "Password",
+  loginButton:      "Log in",
+  forgotText:       "Forgot password?",
+  forgotUrl:        "#",
+  noAccountText:    "Don't have an account?",
+  noAccountButton:  "Sign up",
+
+  // 4. Sign up screen
+  signupTitle:      "Sign up for My App",
+  signupSubtitle:   "Create a profile, follow others, and more.",
+  signupTab:        "Sign up",
+  usernameLabel:    "Username",
+  emailLabel:       "Email address",
+  signupButton:     "Sign up",
+  haveAccountText:  "Already have an account?",
+  haveAccountButton:"Log in",
+  termsText:        "By continuing, you agree to our Terms of Service and Privacy Policy.",
+
+  // 5. After success
+  loginSuccess:  "Logged in! Redirecting…",
+  signupSuccess: "Account created! You can log in now.",
+  redirectUrl:   "",   // e.g. "/home.html" — leave empty to stay on this page
+  minPasswordLength: 8
+};
+/* ============================================================ */
+
+const $ = id => document.getElementById(id);
+let mode = "login";
+
+document.documentElement.style.setProperty("--accent", CONFIG.accentColor);
+document.title = CONFIG.pageTitle;
+$("identifier").placeholder = CONFIG.identifierLabel;
+$("username").placeholder   = CONFIG.usernameLabel;
+$("email").placeholder      = CONFIG.emailLabel;
+$("password").placeholder   = CONFIG.passwordLabel;
+$("forgot").textContent = CONFIG.forgotText;
+$("forgot").href = CONFIG.forgotUrl;
+$("terms").textContent = CONFIG.termsText;
+$("tabLogin").textContent  = CONFIG.loginTab;
+$("tabSignup").textContent = CONFIG.signupTab;
+
+function render(){
+  const login = mode === "login";
+  $("title").textContent    = login ? CONFIG.loginTitle    : CONFIG.signupTitle;
+  $("subtitle").textContent = login ? CONFIG.loginSubtitle : CONFIG.signupSubtitle;
+  $("go").textContent       = login ? CONFIG.loginButton   : CONFIG.signupButton;
+  $("switchText").textContent = login ? CONFIG.noAccountText   : CONFIG.haveAccountText;
+  $("switchBtn").textContent  = login ? CONFIG.noAccountButton : CONFIG.haveAccountButton;
+  $("fId").classList.toggle("hide", !login);
+  $("fUser").classList.toggle("hide", login);
+  $("fEmail").classList.toggle("hide", login);
+  $("forgot").classList.toggle("hide", !login);
+  $("terms").classList.toggle("hide", login);
+  $("tabLogin").classList.toggle("on", login);
+  $("tabSignup").classList.toggle("on", !login);
+  $("password").autocomplete = login ? "current-password" : "new-password";
+  setMsg("");
+}
+function setMsg(t, ok){ $("msg").textContent = t; $("msg").className = "msg" + (ok ? " ok" : ""); }
+
+$("tabLogin").onclick  = () => { mode = "login";  render(); };
+$("tabSignup").onclick = () => { mode = "signup"; render(); };
+$("switchBtn").onclick = () => { mode = mode === "login" ? "signup" : "login"; render(); };
+$("toggle").onclick = () => {
+  const p = $("password"); const show = p.type === "password";
+  p.type = show ? "text" : "password"; $("toggle").textContent = show ? "Hide" : "Show";
+};
+
+$("form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const password = $("password").value;
+  let payload;
+
+  if (mode === "login") {
+    const identifier = $("identifier").value.trim();
+    if (!identifier || !password) return setMsg("Enter your " + CONFIG.identifierLabel.toLowerCase() + " and password.");
+    payload = { action: "login", identifier, password };
+  } else {
+    const username = $("username").value.trim(), email = $("email").value.trim();
+    if (!username) return setMsg("Enter a username.");
+    if (!/^\S+@\S+\.\S+$/.test(email)) return setMsg("Enter a valid email address.");
+    if (password.length < CONFIG.minPasswordLength) return setMsg("Password must be at least " + CONFIG.minPasswordLength + " characters.");
+    payload = { action: "signup", username, email, password };
+  }
+
+  if (CONFIG.sheetUrl.startsWith("PASTE_")) return setMsg("Add your Google Apps Script URL in CONFIG.sheetUrl.");
+
+  $("go").disabled = true; setMsg("");
+  try {
+    // text/plain avoids a CORS preflight, which Apps Script doesn't support
+    const res = await fetch(CONFIG.sheetUrl, {
+      method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+    const raw = await res.text();
+    let data;
+    try { data = JSON.parse(raw); }
+    catch (_) { return setMsg("The script replied with a web page, not data (HTTP " + res.status + "). Set access to Anyone and deploy again."); }
+    if (!data.ok) return setMsg(data.error || "Something went wrong. Try again.");
+
+    if (mode === "signup") {
+      setMsg(CONFIG.signupSuccess, true);
+      $("form").reset(); mode = "login"; setTimeout(render, 1500);
+      setTimeout(() => setMsg(CONFIG.signupSuccess, true), 1510);
+    } else {
+      setMsg(CONFIG.loginSuccess, true);
+      try { sessionStorage.setItem("user", JSON.stringify(data.user)); } catch(_) {}
+      if (CONFIG.redirectUrl) setTimeout(() => location.href = CONFIG.redirectUrl, 700);
+    }
+  } catch (err) {
+    setMsg("Couldn't reach the server (" + err.message + "). Open this page from a real host, not a preview, and check the Apps Script URL.");
+  } finally { $("go").disabled = false; }
+});
+
+render();
+</script>
+</body>
+</html>
